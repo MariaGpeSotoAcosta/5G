@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: smart-coverage-backend
+  graphql:
+    graphiql:
+      enabled: true
+      path: /graphiql
+    path: /graphql
+    schema:
+      locations: classpath:graphql/
+
+server:
+  port: 8080
+
+firebase:
+  project-id: map5g-4352b
+  credentials-path: src/main/resources/firebase/serviceAccount.json
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.smartcoverage: DEBUG
+    com.google.cloud.firestore: INFO

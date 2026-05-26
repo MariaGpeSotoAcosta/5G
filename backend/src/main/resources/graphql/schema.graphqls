@@ -1,0 +1,50 @@
+type CoverageZone {
+  id: ID!
+  zoneName: String!
+  signalStrength: Int!
+  provider: String!
+  latitude: Float!
+  longitude: Float!
+  status: String!
+}
+
+type Tower {
+  id: ID!
+  provider: String!
+  height: Float!
+  latitude: Float!
+  longitude: Float!
+  status: String!
+}
+
+type Incident {
+  id: ID!
+  title: String!
+  severity: String!
+  latitude: Float!
+  longitude: Float!
+  description: String
+  createdAt: String
+}
+
+input CoverageFilterInput {
+  provider: String
+  minSignalStrength: Int
+  status: String
+}
+
+input TowerFilterInput {
+  provider: String
+  status: String
+}
+
+input IncidentFilterInput {
+  severity: String
+  text: String
+}
+
+type Query {
+  coverageZones(filter: CoverageFilterInput): [CoverageZone!]!
+  towers(filter: TowerFilterInput): [Tower!]!
+  incidents(filter: IncidentFilterInput): [Incident!]!
+}

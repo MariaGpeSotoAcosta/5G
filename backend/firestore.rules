@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Coverage zones — read-only for all (no auth required per project scope)
+    match /coverageZones/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Towers — read-only
+    match /towers/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Incidents — read-only
+    match /incidents/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}
