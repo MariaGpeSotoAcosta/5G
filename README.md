@@ -125,13 +125,79 @@ npm run build
 
 ---
 
-## 
+## PREGUNTAS DE RUBRICA
 
-| Endpoint | Método | Descripción |
-|---|---|---|
-| `/graphql` | POST | API GraphQL principal |
-| `/graphiql` | GET | Explorador GraphQL interactivo |
-| `/actuator/health` | GET | Health check |
+### Explicación del patrón Observer en React (10 pts)
+
+El **patrón Observer** define una relación de uno-a-muchos: cuando un objeto (el sujeto) cambia de estado, todos sus dependientes (observadores) son notificados automáticamente.
+
+En React, este patrón se implementa de forma nativa con **Context API + `useState`/`useContext`**. El sujeto es el estado centralizado y los observadores son todos los componentes que lo consumen — se re-renderizan automáticamente al detectar un cambio.
+
+**Cómo se usa en este proyecto:**
+
+`DashboardContext.jsx` actúa como el **sujeto observable**. Almacena el estado global de filtros y visibilidad de capas:
+
+```jsx
+// frontend/src/context/DashboardContext.jsx
+const DashboardContext = createContext(null);
+
+export function DashboardProvider({ children }) {
+  const [selectedProvider, setSelectedProvider] = useState("");
+  const [selectedStatus, setSelectedStatus]     = useState("");
+  // ... más estado compartido
+
+  return (
+    <DashboardContext.Provider value={{ selectedProvider, setSelectedProvider, ... }}>
+      {children}
+    </DashboardContext.Provider>
+  );
+}
+```
+
+`useDashboardData.js` actúa como un **observador**: se suscribe al contexto y reacciona a cada cambio de filtro lanzando un nuevo query GraphQL:
+
+```js
+// frontend/src/hooks/useDashboardData.js
+const { selectedProvider, selectedStatus, ... } = useDashboard(); // se suscribe
+
+useEffect(() => {
+  refetchCoverage({ filter: buildCoverageFilter(selectedProvider, selectedStatus, minSignalStrength) });
+}, [selectedProvider, selectedStatus, minSignalStrength, refetchCoverage]);
+```
+
+Cuando el usuario cambia un filtro en la barra lateral → `setSelectedProvider(...)` actualiza el contexto → **todos los componentes suscritos** (mapa, cards, datos) se actualizan automáticamente sin comunicación directa entre ellos.
 
 ---
+
+### Explicación del patrón Factory en React (10 pts)
+
+El **patrón Factory** delega la decisión de qué objeto (o componente) crear a una función centralizada, en lugar de hacerlo con `if/else` repartidos por el código. El consumidor solo indica *qué* quiere, y la factory decide *cómo* construirlo.
+
+**Cómo se usa en este proyecto:**
+
+`CardFactory.jsx` es la factory. Recibe un objeto `item` con un campo `type` y devuelve el componente correcto sin que el consumidor sepa qué componentes existen:
+
+```jsx
+// frontend/src/components/cards/CardFactory.jsx
+import CoverageCard  from "./CoverageCard";
+import TowerCard     from "./TowerCard";
+import IncidentCard  from "./IncidentCard";
+
+export default function CardFactory({ item }) {
+  switch (item.type) {
+    case "coverage": return <CoverageCard  data={item} />;
+    case "tower":    return <TowerCard     data={item} />;
+    case "incident": return <IncidentCard  data={item} />;
+    default:         return null;
+  }
+}
+```
+
+El panel de cards simplemente hace:
+
+```jsx
+items.map(item => <CardFactory key={item.id} item={item} />)
+```
+
+**Ventaja clave:** si se agrega un nuevo tipo (por ejemplo `"sensor"`), solo se modifica `CardFactory.jsx` — el resto del código no cambia. Esto aplica el principio Open/Closed: abierto a extensión, cerrado a modificación.
 
